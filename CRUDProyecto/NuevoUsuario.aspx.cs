@@ -1,40 +1,36 @@
 ﻿using BibliotecaMusical.DataLayer;
 using BibliotecaMusical.EntityLayer;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace CRUDProyecto
 {
+    public partial class WebForm1 : System.Web.UI.Page
+    {
+        UsuarioDL usuarioDL = new UsuarioDL();
 
-            public partial class NuevoUsuario : Page
+        protected void Guardar(object sender, EventArgs e)
         {
-            UsuarioDL usuarioDL = new UsuarioDL();
-
-            protected void btnGuardar_Click(object sender, EventArgs e)
+            Usuario nuevoUsuario = new Usuario
             {
-                Usuario nuevoUsuario = new Usuario
-                {
-                    Nombre = txtNombre.Value,
-                    Apellido = txtApellido.Value,
-                    Email = txtEmail.Value,
-                    Contraseña = txtContraseña.Value,
-                    Rol = txtRol.Value,
-                    FechaRegistro = DateTime.Parse(txtFechaRegistro.Value)
-                };
+                Nombre = txtNombre.Value,
+                Apellido = txtApellido.Value,
+                Email = txtEmail.Value,
+                Contraseña = txtContraseña.Value,
+                Rol = ddlRol.SelectedValue,
+                FechaRegistro = DateTime.Parse(txtFechaRegistro.Value)
+            };
 
-                if (usuarioDL.Crear(nuevoUsuario))
-                {
-                    Response.Redirect("Default.aspx");
-                }
-                else
-                {
-                    // Maneja el error, por ejemplo, mostrando un mensaje al usuario.
-                }
+            if (usuarioDL.Crear(nuevoUsuario))
+            {
+                Response.Redirect("default.aspx");
+            }
+            else
+            {
+                // Maneja el error, por ejemplo, mostrando un mensaje al usuario.
             }
         }
+    }
     
 }

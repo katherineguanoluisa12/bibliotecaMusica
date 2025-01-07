@@ -37,5 +37,13 @@ namespace BibliotecaMusical.BusinessLayer
         {
             return _usuarioDL.Eliminar(id);
         }
+        public bool Guardar(int id)
+        {
+            return _usuarioDL.Guardar(id);
+        }
+        public Usuario ClasificarUsuario(string email, string contraseña)
+        {
+            return _usuarioDL.ClasificarUsuario(email, contraseña);
+        }
     }
 }

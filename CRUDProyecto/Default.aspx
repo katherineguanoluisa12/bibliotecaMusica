@@ -13,12 +13,14 @@
             <asp:BoundField DataField="Nombre" HeaderText="Nombre" />
             <asp:BoundField DataField="Apellido" HeaderText="Apellido" />
             <asp:BoundField DataField="Email" HeaderText="Email" />
-            <asp:BoundField DataField="Rol" HeaderText="Rol" />
+            <asp:BoundField DataField="Contraseña" HeaderText="Contraseña" />
             <asp:BoundField DataField="FechaRegistro" HeaderText="Fecha de Registro" DataFormatString="{0:dd/MM/yyyy}" />
             <asp:TemplateField HeaderText="Acciones">
                 <ItemTemplate>
                     <asp:LinkButton ID="lnkEditar" runat="server" CssClass="btn btn-sm btn-warning me-2" CommandArgument='<%# Eval("ID") %>' CommandName="Editar">Editar</asp:LinkButton>
-                    <asp:LinkButton ID="lnkEliminar" runat="server" CssClass="btn btn-sm btn-danger" CommandArgument='<%# Eval("ID") %>' CommandName="Eliminar" OnClientClick="return confirm('¿Estás seguro de eliminar este usuario?');">Eliminar</asp:LinkButton>
+                    <asp:LinkButton ID="lnkEliminar" runat="server" CssClass="btn btn-sm btn-danger" CommandArgument='<%# Eval("ID")
+                            %>' CommandName="Eliminar" OnClientClick="return confirm('¿Estás seguro de eliminar este usuario?');">Eliminar</asp:LinkButton>
+                     <a href="AgregarMaterial.aspx" class="btn btn-primary mb-3">Crear Nuevo Material</a>
                 </ItemTemplate>
             </asp:TemplateField>
         </Columns>

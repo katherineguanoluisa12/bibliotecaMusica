@@ -1,163 +1,151 @@
 ﻿using BibliotecaMusical.EntityLayer;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
-
 
 namespace BibliotecaMusical.DataLayer
 {
     public class MaterialDL
     {
-        private readonly string connectionString = "tu_conexion_a_base_de_datos";
+        private string connectionString;
 
-        public List<Material> Obtener()
+        public MaterialDL()
         {
-            List<Material> materiales = new List<Material>();
-            try
-            {
-                using (var connection = new SqlConnection(connectionString))
-                {
-                    string query = "SELECT * FROM Materiales";
-                    SqlCommand command = new SqlCommand(query, connection);
-                    connection.Open();
+            // Obtén la cadena de conexión desde el archivo Web.config
+            connectionString = ConfigurationManager.ConnectionStrings["CRUDConnectionString"].ConnectionString;
+        }
 
-                    SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        materiales.Add(new Material
-                        {
-                            Material_ID = (int)reader["Material_ID"],
-                            Titulo = reader["Titulo"].ToString(),
-                            Tipo = reader["Tipo"].ToString(),
-                            Autor = reader["Autor"].ToString(),
-                            FechaPublicacion = (DateTime)reader["FechaPublicacion"],
-                            Descripcion = reader["Descripcion"].ToString(),
-                            Ubicacion = reader["Ubicacion"].ToString(),
-                            URL = reader["URL"].ToString(),
-                            Estado = reader["Estado"].ToString()
-                        });
-                    }
-                }
-            }
-            catch (Exception ex)
+        // Obtener lista de materiales
+        public List<Material> Lista(string tipo = null)
+        {
+            var materiales = new List<Material>();
+            using (var connection = new SqlConnection(connectionString))
             {
-                throw ex;
+                SqlCommand command = new SqlCommand("sp_ConsultarMateriales", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                command.Parameters.AddWithValue("@Tipo", (object)tipo ?? DBNull.Value);
+
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    var material = new Material
+                    {
+                        MaterialID = Convert.ToInt32(reader["MaterialID"]),
+                        Titulo = reader["Titulo"].ToString(),
+                        Tipo = reader["Tipo"].ToString(),
+                        Ubicacion = reader["Ubicacion"].ToString(),
+                        Autor = reader["Autor"].ToString(),
+                        FechaPublicacion = Convert.ToDateTime(reader["FechaPublicacion"]),
+                        Descripcion = reader["Descripcion"].ToString(),
+                        FechaAgregado = Convert.ToDateTime(reader["FechaAgregado"]),
+                        AgregadoPor = Convert.ToInt32(reader["AgregadoPor"]),
+                    };
+                    materiales.Add(material);
+                }
             }
             return materiales;
         }
 
-        public Material Obtener(int materialId)
+        // Obtener un material por ID
+        public Material Obtener(int id)
         {
             Material material = null;
-            try
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                using (var connection = new SqlConnection(connectionString))
+                SqlCommand command = new SqlCommand("sp_ConsultarMateriales", connection)
                 {
-                    string query = "SELECT * FROM Materiales WHERE Material_ID = @Material_ID";
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@Material_ID", materialId);
-                    connection.Open();
+                    CommandType = CommandType.StoredProcedure
+                };
+                command.Parameters.AddWithValue("@MaterialID", id);
 
-                    SqlDataReader reader = command.ExecuteReader();
-                    if (reader.Read())
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    material = new Material
                     {
-                        material = new Material
-                        {
-                            Material_ID = (int)reader["Material_ID"],
-                            Titulo = reader["Titulo"].ToString(),
-                            Tipo = reader["Tipo"].ToString(),
-                            Autor = reader["Autor"].ToString(),
-                            FechaPublicacion = (DateTime)reader["FechaPublicacion"],
-                            Descripcion = reader["Descripcion"].ToString(),
-                            Ubicacion = reader["Ubicacion"].ToString(),
-                            URL = reader["URL"].ToString(),
-                            Estado = reader["Estado"].ToString()
-                        };
-                    }
+                        MaterialID = Convert.ToInt32(reader["MaterialID"]),
+                        Titulo = reader["Titulo"].ToString(),
+                        Tipo = reader["Tipo"].ToString(),
+                        Ubicacion = reader["Ubicacion"].ToString(),
+                        Autor = reader["Autor"].ToString(),
+                        FechaPublicacion = Convert.ToDateTime(reader["FechaPublicacion"]),
+                        Descripcion = reader["Descripcion"].ToString(),
+                        FechaAgregado = Convert.ToDateTime(reader["FechaAgregado"]),
+                        AgregadoPor = Convert.ToInt32(reader["AgregadoPor"]),
+                    };
                 }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
             }
             return material;
         }
 
+        // Crear un material
         public bool Crear(Material material)
         {
-            try
+            using (var connection = new SqlConnection(connectionString))
             {
-                using (var connection = new SqlConnection(connectionString))
+                SqlCommand command = new SqlCommand("sp_InsertarMaterial", connection)
                 {
-                    string query = "INSERT INTO Materiales (Titulo, Tipo, Autor, FechaPublicacion, Descripcion, Ubicacion, URL, Estado) VALUES (@Titulo, @Tipo, @Autor, @FechaPublicacion, @Descripcion, @Ubicacion, @URL, @Estado)";
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@Titulo", material.Titulo);
-                    command.Parameters.AddWithValue("@Tipo", material.Tipo);
-                    command.Parameters.AddWithValue("@Autor", material.Autor);
-                    command.Parameters.AddWithValue("@FechaPublicacion", material.FechaPublicacion);
-                    command.Parameters.AddWithValue("@Descripcion", material.Descripcion);
-                    command.Parameters.AddWithValue("@Ubicacion", material.Ubicacion);
-                    command.Parameters.AddWithValue("@URL", material.URL);
-                    command.Parameters.AddWithValue("@Estado", material.Estado);
-                    connection.Open();
+                    CommandType = CommandType.StoredProcedure
+                };
 
-                    int result = command.ExecuteNonQuery();
-                    return result > 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
+                // Agregar los parámetros para insertar un nuevo material
+                command.Parameters.AddWithValue("@Titulo", material.Titulo);
+                command.Parameters.AddWithValue("@Tipo", material.Tipo);
+                command.Parameters.AddWithValue("@Ubicacion", material.Ubicacion);
+                command.Parameters.AddWithValue("@Autor", material.Autor);
+                command.Parameters.AddWithValue("@FechaPublicacion", material.FechaPublicacion);
+                command.Parameters.AddWithValue("@Descripcion", material.Descripcion);
+                command.Parameters.AddWithValue("@AgregadoPor", material.AgregadoPor);
+
+                connection.Open();
+                return command.ExecuteNonQuery() > 0;
             }
         }
 
-        public bool Modificar(Material material)
+        // Editar un material
+        public bool Editar(Material material)
         {
-            try
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                using (var connection = new SqlConnection(connectionString))
+                SqlCommand command = new SqlCommand("sp_ActualizarMaterial", connection)
                 {
-                    string query = "UPDATE Materiales SET Titulo = @Titulo, Tipo = @Tipo, Autor = @Autor, FechaPublicacion = @FechaPublicacion, Descripcion = @Descripcion, Ubicacion = @Ubicacion, URL = @URL, Estado = @Estado WHERE Material_ID = @Material_ID";
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@Titulo", material.Titulo);
-                    command.Parameters.AddWithValue("@Tipo", material.Tipo);
-                    command.Parameters.AddWithValue("@Autor", material.Autor);
-                    command.Parameters.AddWithValue("@FechaPublicacion", material.FechaPublicacion);
-                    command.Parameters.AddWithValue("@Descripcion", material.Descripcion);
-                    command.Parameters.AddWithValue("@Ubicacion", material.Ubicacion);
-                    command.Parameters.AddWithValue("@URL", material.URL);
-                    command.Parameters.AddWithValue("@Estado", material.Estado);
-                    command.Parameters.AddWithValue("@Material_ID", material.Material_ID);
-                    connection.Open();
+                    CommandType = CommandType.StoredProcedure
+                };
+                command.Parameters.AddWithValue("@MaterialID", material.MaterialID);
+                command.Parameters.AddWithValue("@Titulo", material.Titulo);
+                command.Parameters.AddWithValue("@Tipo", material.Tipo);
+                command.Parameters.AddWithValue("@Ubicacion", material.Ubicacion);
+                command.Parameters.AddWithValue("@Autor", material.Autor);
+                command.Parameters.AddWithValue("@FechaPublicacion", material.FechaPublicacion);
+                command.Parameters.AddWithValue("@Descripcion", material.Descripcion);
+                command.Parameters.AddWithValue("@AgregadoPor", material.AgregadoPor);
 
-                    int result = command.ExecuteNonQuery();
-                    return result > 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
+                connection.Open();
+                return command.ExecuteNonQuery() > 0;
             }
         }
 
-        public bool Eliminar(int materialId)
+        // Eliminar un material
+        public bool Eliminar(int id)
         {
-            try
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                using (var connection = new SqlConnection(connectionString))
+                SqlCommand command = new SqlCommand("sp_EliminarMaterial", connection)
                 {
-                    string query = "DELETE FROM Materiales WHERE Material_ID = @Material_ID";
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@Material_ID", materialId);
-                    connection.Open();
+                    CommandType = CommandType.StoredProcedure
+                };
+                command.Parameters.AddWithValue("@MaterialID", id);
 
-                    int result = command.ExecuteNonQuery();
-                    return result > 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
+                connection.Open();
+                return command.ExecuteNonQuery() > 0;
             }
         }
     }

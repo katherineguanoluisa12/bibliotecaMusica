@@ -10,66 +10,47 @@ namespace BibliotecaMusical.BusinessLayer
 {
     public class MaterialesBL
     {
-        private readonly MaterialDL materialesDL = new MaterialDL();
+        private readonly MaterialDL _materialDL = new MaterialDL();
 
-        public List<Material> ObtenerTodo()
+        // Obtener lista de materiales
+        public List<Material> Lista(string tipo = null)
         {
-            try
-            {
-                return materialesDL.Obtener();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            return _materialDL.Lista(tipo);
         }
 
-        public Material Obtener(int materialId)
+        // Obtener un material por ID
+        public Material Obtener(int id)
         {
-            try
-            {
-                return materialesDL.Obtener(materialId);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            return _materialDL.Obtener(id);
         }
 
+        // Crear un material
         public bool Crear(Material material)
         {
-            try
+            if (string.IsNullOrEmpty(material.Titulo) || string.IsNullOrEmpty(material.Tipo))
             {
-                return materialesDL.Crear(material);
+                throw new ArgumentException("El título y el tipo son obligatorios.");
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+
+            return _materialDL.Crear(material);
         }
 
-        public bool Modificar(Material material)
+        // Editar un material
+        public bool Editar(Material material)
         {
-            try
+            if (material.MaterialID == 0)
             {
-                return materialesDL.Modificar(material);
+                throw new ArgumentException("El ID del material no puede ser 0.");
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+
+            return _materialDL.Editar(material);
         }
 
-        public bool Eliminar(int materialId)
+        // Eliminar un material
+        public bool Eliminar(int id)
         {
-            try
-            {
-                return materialesDL.Eliminar(materialId);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            return _materialDL.Eliminar(id);
         }
     }
 }
+

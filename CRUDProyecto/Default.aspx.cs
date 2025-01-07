@@ -12,6 +12,7 @@ namespace CRUDProyecto
     {
         UsuarioDL usuarioDL = new UsuarioDL();
 
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
@@ -55,6 +56,17 @@ namespace CRUDProyecto
         protected void gvUsuarios_SelectedIndexChanged(object sender, EventArgs e)
         {
             // Este evento puede dejarse vacío si no necesitas implementar lógica aquí.
+        }
+        public partial class Default : System.Web.UI.Page
+        {
+            protected void Page_Load(object sender, EventArgs e)
+            {
+                // Verificar que el usuario tiene rol de Administrador
+                if (Session["Rol"] == null || Session["Rol"].ToString() != "Administrador")
+                {
+                    Response.Redirect("Inicio.aspx");
+                }
+            }
         }
     }
 }

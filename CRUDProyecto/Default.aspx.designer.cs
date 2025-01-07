@@ -23,8 +23,6 @@ namespace CRUDProyecto
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnNuevoUsuario;
 
-
-
         /// <summary>
         /// Control gvUsuarios.
         /// </summary>
