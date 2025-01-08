@@ -170,10 +170,10 @@ namespace BibliotecaMusical.DataLayer
                         {
                             usuario = new Usuario
                             {
-                                ID = reader["ID"] != DBNull.Value ? Convert.ToInt32(reader["ID"]) : 0,
-                                Nombre = reader["Nombre"]?.ToString(),
-                                Apellido = reader["Apellido"]?.ToString(),
-                                Rol = reader["Rol"]?.ToString()
+                                ID = Convert.ToInt32(reader["ID"]),
+                                Nombre = reader["Nombre"].ToString(),
+                                Apellido = reader["Apellido"].ToString(),
+                                Rol = reader["Rol"].ToString()
                             };
                         }
                     }
@@ -181,23 +181,40 @@ namespace BibliotecaMusical.DataLayer
             }
             catch (SqlException ex)
             {
-                // Mostrar el error detallado de SQL
-                Console.WriteLine($"Error SQL: {ex.Message}");
+                Console.WriteLine($"Error al clasificar usuario: {ex.Message}");
             }
-            catch (Exception ex)
-            {
-                // Mostrar cualquier otro error
-                Console.WriteLine($"Error general: {ex.Message}");
-            }
+            return usuario;
+        }
+        public List<Usuario> Buscar(string textoBuscado)
+        {
+            var usuarios = new List<Usuario>();
+            string query = "EXEC sp_BuscarUsuarios @Busqueda";
 
-            if (usuario == null)
+            using (var connection = new SqlConnection(connectionString))
             {
-                Console.WriteLine("Usuario no encontrado o credenciales inválidas.");
-            }
+                var command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@Busqueda", textoBuscado);
+                connection.Open();
 
-            return usuario; // Retorna el usuario o null
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var usuario = new Usuario
+                        {
+                            ID = Convert.ToInt32(reader["ID"]),
+                            Nombre = reader["Nombre"].ToString(),
+                            Apellido = reader["Apellido"].ToString(),
+                            Email = reader["Email"].ToString(),
+                            Contraseña = reader["Contraseña"].ToString(),
+                            Rol = reader["Rol"].ToString(),
+                            FechaRegistro = Convert.ToDateTime(reader["FechaRegistro"])
+                        };
+                        usuarios.Add(usuario);
+                    }
+                }
+            }
+            return usuarios;
         }
     }
 }
-
-

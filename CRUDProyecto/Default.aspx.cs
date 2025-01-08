@@ -5,13 +5,12 @@ using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-
 namespace CRUDProyecto
 {
     public partial class _Default : Page
     {
         UsuarioDL usuarioDL = new UsuarioDL();
-
+        UsuarioBL usuarioBL = new UsuarioBL(); // Añadimos una instancia de UsuarioBL
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -28,8 +27,15 @@ namespace CRUDProyecto
 
         private void CargarUsuarios()
         {
-            gvUsuarios.DataSource = usuarioDL.Lista(); // Asegúrate de que este método devuelva una lista válida.
-            gvUsuarios.DataBind();
+            try
+            {
+                gvUsuarios.DataSource = usuarioDL.Lista(); // Asegúrate de que este método devuelva una lista válida.
+                gvUsuarios.DataBind();
+            }
+            catch (Exception ex)
+            {
+                MostrarError($"Error al cargar los usuarios: {ex.Message}");
+            }
         }
 
         protected void gvUsuarios_RowCommand(object sender, GridViewCommandEventArgs e)
@@ -42,13 +48,20 @@ namespace CRUDProyecto
             }
             else if (e.CommandName == "Eliminar")
             {
-                if (usuarioDL.Eliminar(idUsuario))
+                try
                 {
-                    CargarUsuarios();
+                    if (usuarioDL.Eliminar(idUsuario))
+                    {
+                        CargarUsuarios();
+                    }
+                    else
+                    {
+                        MostrarError("Error al eliminar el usuario.");
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // Aquí podrías agregar un mensaje de error, si lo necesitas.
+                    MostrarError($"Error al eliminar el usuario: {ex.Message}");
                 }
             }
         }
@@ -57,16 +70,28 @@ namespace CRUDProyecto
         {
             // Este evento puede dejarse vacío si no necesitas implementar lógica aquí.
         }
-        public partial class Default : System.Web.UI.Page
+
+        protected void BtnBuscar_Click(object sender, EventArgs e)
         {
-            protected void Page_Load(object sender, EventArgs e)
+            try
             {
-                // Verificar que el usuario tiene rol de Administrador
-                if (Session["Rol"] == null || Session["Rol"].ToString() != "Administrador")
-                {
-                    Response.Redirect("Inicio.aspx");
-                }
+                string textoBuscado = txtBuscar.Text.Trim();
+                var usuariosFiltrados = usuarioBL.Buscar(textoBuscado); // Ahora usamos la instancia usuarioBL
+                gvUsuarios.DataSource = usuariosFiltrados;
+                gvUsuarios.DataBind();
             }
+            catch (Exception ex)
+            {
+                MostrarError($"Error al buscar usuarios: {ex.Message}");
+            }
+        }
+
+        // Método para mostrar errores
+        private void MostrarError(string mensaje)
+        {
+            // Asegúrate de que lblErrorMessage esté definido en tu página ASPX
+            lblErrorMessage.Text = mensaje;
+            lblErrorMessage.Visible = true;
         }
     }
 }

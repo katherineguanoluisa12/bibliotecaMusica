@@ -45,5 +45,9 @@ namespace BibliotecaMusical.BusinessLayer
         {
             return _usuarioDL.ClasificarUsuario(email, contraseña);
         }
+        public List<Usuario> Buscar(string textoBuscado)
+        {
+            return _usuarioDL.Buscar(textoBuscado);
+        }
     }
 }
